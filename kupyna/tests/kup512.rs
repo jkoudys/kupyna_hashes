@@ -29,8 +29,8 @@ fn kup512_n512_split() {
     );
 
     let mut hasher = Kupyna512::default();
-    hasher.update(&input[..256]);
-    hasher.update(&input[256..]);
+    hasher.update(&input[..32]);
+    hasher.update(&input[32..]);
     let result = hasher.finalize();
 
     assert_eq!(
@@ -84,8 +84,8 @@ fn kup512_n1024_split() {
     );
 
     let mut hasher = Kupyna512::default();
-    hasher.update(&input[..512]);
-    hasher.update(&input[512..]);
+    hasher.update(&input[..64]);
+    hasher.update(&input[64..]);
     let result = hasher.finalize();
 
     assert_eq!(
