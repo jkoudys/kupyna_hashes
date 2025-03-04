@@ -43,6 +43,27 @@ fn kup512_n512_split() {
 }
 
 #[test]
+fn kup512_n8() {
+    let input = hex!(
+        "FF"
+    );
+
+    let mut hasher = Kupyna512::default();
+    hasher.update(&input);
+
+    let result = hasher.finalize();
+
+    assert_eq!(
+        result[..],
+        hex!(
+            "871B18CF754B72740307A97B449ABEB32B64444CC0D5A4D65830AE5456837A72"
+            
+            "D8458F12C8F06C98C616ABE11897F86263B5CB77C420FB375374BEC52B6D0292"
+        )[..]
+    );
+}
+
+#[test]
 fn kup512_n1024() {
     let input = hex!(
         "000102030405060708090A0B0C0D0E0F"

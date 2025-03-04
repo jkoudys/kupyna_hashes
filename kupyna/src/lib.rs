@@ -239,6 +239,7 @@ impl VariableOutputCore for KupynaLongVarCore {
             self.blocks_len + 1
         };
 
+        println!("{:?}", total_message_len_bits);
         buffer.digest_pad(
             0x80,
             &total_message_len_bits.to_le_bytes()[0..12],
