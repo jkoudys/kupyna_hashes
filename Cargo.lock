@@ -201,7 +201,6 @@ dependencies = [
 name = "kupyna"
 version = "0.1.0"
 dependencies = [
- "base16ct",
  "digest",
  "hex-literal",
 ]
