@@ -17,8 +17,28 @@ fn kup512_n512() {
         hex!(
             "3813E2109118CDFB5A6D5E72F7208DCCC80A2DFB3AFDFB02F46992B5EDBE536B"
             "3560DD1D7E29C6F53978AF58B444E37BA685C0DD910533BA5D78EFFFC13DE62A"
-        )[..],
-        "Kupyna-512 did not produce the expected hash output"
+        )[..]
+    );
+}
+
+#[test]
+fn kup512_n512_split() {
+    let input = hex!(
+        "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F"
+        "202122232425262728292A2B2C2D2E2F303132333435363738393A3B3C3D3E3F"
+    );
+
+    let mut hasher = Kupyna512::default();
+    hasher.update(&input[..256]);
+    hasher.update(&input[256..]);
+    let result = hasher.finalize();
+
+    assert_eq!(
+        result[..],
+        hex!(
+            "3813E2109118CDFB5A6D5E72F7208DCCC80A2DFB3AFDFB02F46992B5EDBE536B"
+            "3560DD1D7E29C6F53978AF58B444E37BA685C0DD910533BA5D78EFFFC13DE62A"
+        )[..]
     );
 }
 
@@ -46,8 +66,36 @@ fn kup512_n1024() {
             "B356441263C13E03FA060A8CADA32B97"
             "9635657F256B15D5FCA4A174DE029F0B"
             "1B4387C878FCC1C00E8705D783FD7FFE"
-        )[..],
-        "Kupyna-512 did not produce the expected hash output"
+        )[..]
+    );
+}
+
+#[test]
+fn kup512_n1024_split() {
+    let input = hex!(
+        "000102030405060708090A0B0C0D0E0F"
+        "101112131415161718191A1B1C1D1E1F"
+        "202122232425262728292A2B2C2D2E2F"
+        "303132333435363738393A3B3C3D3E3F"
+        "404142434445464748494A4B4C4D4E4F"
+        "505152535455565758595A5B5C5D5E5F"
+        "606162636465666768696A6B6C6D6E6F"
+        "707172737475767778797A7B7C7D7E7F"
+    );
+
+    let mut hasher = Kupyna512::default();
+    hasher.update(&input[..512]);
+    hasher.update(&input[512..]);
+    let result = hasher.finalize();
+
+    assert_eq!(
+        result[..],
+        hex!(
+            "76ED1AC28B1D0143013FFA87213B4090"
+            "B356441263C13E03FA060A8CADA32B97"
+            "9635657F256B15D5FCA4A174DE029F0B"
+            "1B4387C878FCC1C00E8705D783FD7FFE"
+        )[..]
     );
 }
 
@@ -71,8 +119,7 @@ fn kup512_n1536() {
         hex!(
             "B189BFE987F682F5F167F0D7FA565330E126B6E592B1C55D44299064EF95B1A5"
             "7F3C2D0ECF17869D1D199EBBD02E8857FB8ADD67A8C31F56CD82C016CF743121"
-        )[..],
-        "Kupyna-512 did not produce the expected hash output"
+        )[..]
     );
 }
 
@@ -98,7 +145,6 @@ fn kup512_n2048() {
         hex!(
             "0DD03D7350C409CB3C29C25893A0724F6B133FA8B9EB90A64D1A8FA93B565566"
             "11EB187D715A956B107E3BFC76482298133A9CE8CBC0BD5E1436A5B197284F7E"
-        )[..],
-        "Kupyna-512 did not produce the expected hash output"
+        )[..]
     );
 }
