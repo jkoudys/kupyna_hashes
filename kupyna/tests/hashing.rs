@@ -200,7 +200,12 @@ fn kup512_n512() {
     let result = hasher.finalize();
     assert_eq!(
         result[..],
-        hex!("3813E2109118CDFB5A6D5E72F7208DCCC80A2DFB3AFDFB02F46992B5EDBE536B")[..]
+        hex!(
+            "3813E2109118CDFB5A6D5E72F7208DCC"
+            "C80A2DFB3AFDFB02F46992B5EDBE536B"
+            "3560DD1D7E29C6F53978AF58B444E37B"
+            "A685C0DD910533BA5D78EFFFC13DE62A"
+        )[..]
     );
 }
 
