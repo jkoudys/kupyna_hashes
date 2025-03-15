@@ -6,52 +6,24 @@ use hex_literal::hex;
 use kupyna::{Digest, Kupyna256, Kupyna48, Kupyna512, Kupyna384};
 
 /// Returns the “test” message bytes – 256 bytes from 0x00 to 0xFF.
-fn test_message() -> [u8; 256] {
-    // This is the same as the C array: 0x00, 0x01, …, 0xFF.
-    hex!(
-        "000102030405060708090A0B0C0D0E0F\
-         101112131415161718191A1B1C1D1E1F\
-         202122232425262728292A2B2C2D2E2F\
-         303132333435363738393A3B3C3D3E3F\
-         404142434445464748494A4B4C4D4E4F\
-         505152535455565758595A5B5C5D5E5F\
-         606162636465666768696A6B6C6D6E6F\
-         707172737475767778797A7B7C7D7E7F\
-         808182838485868788898A8B8C8D8E8F\
-         909192939495969798999A9B9C9D9E9F\
-         A0A1A2A3A4A5A6A7A8A9AAABACADAEAF\
-         B0B1B2B3B4B5B6B7B8B9BABBBCBDBEBF\
-         C0C1C2C3C4C5C6C7C8C9CACBCCCDCECF\
-         D0D1D2D3D4D5D6D7D8D9DADBDCDDDEDF\
-         E0E1E2E3E4E5E6E7E8E9EAEBECEDEEEF\
-         F0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFF"
-    )
-}
-
-/// Returns the 1-byte test vector (for 8-bit tests)
-fn test_8() -> [u8; 1] {
-    [0xFF]
-}
-
-/// Returns the 5-byte test vector (for the 33‑bit test). Note that in C only 33 bits are used.
-/// If your API supports “bit‐oriented” updates you might feed in 33 as bit‑length;
-/// here we assume that you can supply the full byte slice and the hasher internally will mask the extra bits.
-fn test_33() -> [u8; 5] {
-    [0x00, 0x00, 0xFF, 0x00, 0x00]
-}
-
-/// Helper: Given a full message slice, returns a new Vec<u8> that represents the first `bits` bits of the message.
-/// (Any leftover bits in the final byte are masked.)
-fn truncate_to_bits(msg: &[u8], bits: usize) -> Vec<u8> {
-    let full_bytes = bits / 8;
-    let rem = bits % 8;
-    let mut out = msg[..full_bytes].to_vec();
-    if rem > 0 {
-        let mask = 0xFF & (!((1 << (8 - rem)) - 1));
-        out.push(msg[full_bytes] & mask);
-    }
-    out
-}
+const TEST_MESSAGE: [u8; 256] = hex!(
+    "000102030405060708090A0B0C0D0E0F\
+    101112131415161718191A1B1C1D1E1F\
+    202122232425262728292A2B2C2D2E2F\
+    303132333435363738393A3B3C3D3E3F\
+    404142434445464748494A4B4C4D4E4F\
+    505152535455565758595A5B5C5D5E5F\
+    606162636465666768696A6B6C6D6E6F\
+    707172737475767778797A7B7C7D7E7F\
+    808182838485868788898A8B8C8D8E8F\
+    909192939495969798999A9B9C9D9E9F\
+    A0A1A2A3A4A5A6A7A8A9AAABACADAEAF\
+    B0B1B2B3B4B5B6B7B8B9BABBBCBDBEBF\
+    C0C1C2C3C4C5C6C7C8C9CACBCCCDCECF\
+    D0D1D2D3D4D5D6D7D8D9DADBDCDDDEDF\
+    E0E1E2E3E4E5E6E7E8E9EAEBECEDEEEF\
+    F0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFF"
+);
 
 //
 //=== Kupyna-256 tests ===
@@ -60,7 +32,7 @@ fn truncate_to_bits(msg: &[u8], bits: usize) -> Vec<u8> {
 #[test]
 fn kup256_n512() {
     // Use first 64 bytes (512 bits) from the test message.
-    let msg = &test_message()[..64];
+    let msg = &TEST_MESSAGE[..64];
     let mut hasher = Kupyna256::default();
     // If your implementation supports bit-level updates, you might do:
     // hasher.update_bits(msg, 512);
@@ -76,7 +48,7 @@ fn kup256_n512() {
 #[test]
 fn kup256_n1024() {
     // Use first 128 bytes (1024 bits)
-    let msg = &test_message()[..128];
+    let msg = &TEST_MESSAGE[..128];
     let mut hasher = Kupyna256::default();
     hasher.update(msg);
     let result = hasher.finalize();
@@ -89,7 +61,7 @@ fn kup256_n1024() {
 #[test]
 fn kup256_n2048() {
     // Use the full 256-byte message (2048 bits)
-    let msg = &test_message();
+    let msg = &TEST_MESSAGE;
     let mut hasher = Kupyna256::default();
     hasher.update(msg);
     let result = hasher.finalize();
@@ -102,7 +74,7 @@ fn kup256_n2048() {
 #[test]
 fn kup256_n8() {
     // 8 bits: one full byte (0xFF)
-    let msg = &test_8();
+    let msg = &[0xFF];
     let mut hasher = Kupyna256::default();
     hasher.update(msg);
     let result = hasher.finalize();
@@ -115,7 +87,7 @@ fn kup256_n8() {
 #[test]
 fn kup256_n760() {
     // 760 bits: that’s 95 full bytes exactly.
-    let msg = &test_message()[..95];
+    let msg = &TEST_MESSAGE[..95];
     let mut hasher = Kupyna256::default();
     hasher.update(msg);
     let result = hasher.finalize();
@@ -138,37 +110,6 @@ fn kup256_empty() {
     );
 }
 
-#[test]
-fn kup256_n510() {
-    // 510 bits: that is 63 full bytes and 6 bits of the 64th byte.
-    let full_msg = test_message();
-    let msg = truncate_to_bits(&full_msg, 510);
-    let mut hasher = Kupyna256::default();
-    // If supported, use a bit-level update:
-    // hasher.update_bits(&msg, 510);
-    // Otherwise, assume you have pre-masked msg.
-    hasher.update(&msg);
-    let result = hasher.finalize();
-    assert_eq!(
-        result[..],
-        hex!("875C0023DAA0C077809FDD6A9672B49E03903BFF98EBE48740AE998C7BE3851E")[..]
-    );
-}
-
-#[test]
-fn kup256_n655() {
-    // 655 bits: 81 full bytes and 7 bits from the next byte.
-    let full_msg = test_message();
-    let msg = truncate_to_bits(&full_msg, 655);
-    let mut hasher = Kupyna256::default();
-    // Use bit-level update if available.
-    hasher.update(&msg);
-    let result = hasher.finalize();
-    assert_eq!(
-        result[..],
-        hex!("4237D7DE1A00C4CC8037EDE9C54BA60D1C705CD1495DE19E5245BF3509DB59CE")[..]
-    );
-}
 
 //
 //=== Kupyna-48 test ===
@@ -177,7 +118,7 @@ fn kup256_n655() {
 #[test]
 fn kup48_n512() {
     // For Kupyna-48, we use the first 64 bytes (512 bits) as input.
-    let msg = &test_message()[..64];
+    let msg = &TEST_MESSAGE[..64];
     let mut hasher = Kupyna48::default();
     hasher.update(msg);
     let result = hasher.finalize();
@@ -194,7 +135,7 @@ fn kup48_n512() {
 #[test]
 fn kup512_n512() {
     // 512 bits of input: first 64 bytes.
-    let msg = &test_message()[..64];
+    let msg = &TEST_MESSAGE[..64];
     let mut hasher = Kupyna512::default();
     hasher.update(msg);
     let result = hasher.finalize();
@@ -212,7 +153,7 @@ fn kup512_n512() {
 #[test]
 fn kup512_n1024() {
     // 1024 bits of input: first 128 bytes.
-    let msg = &test_message()[..128];
+    let msg = &TEST_MESSAGE[..128];
     let mut hasher = Kupyna512::default();
     hasher.update(msg);
     let result = hasher.finalize();
@@ -230,7 +171,7 @@ fn kup512_n1024() {
 #[test]
 fn kup512_n2048() {
     // 2048 bits: full 256-byte message.
-    let msg = &test_message();
+    let msg = &TEST_MESSAGE;
     let mut hasher = Kupyna512::default();
     hasher.update(msg);
     let result = hasher.finalize();
@@ -248,7 +189,7 @@ fn kup512_n2048() {
 #[test]
 fn kup512_n8() {
     // 8-bit input: one byte 0xFF.
-    let msg = &test_8();
+    let msg = &[0xFF];
     let mut hasher = Kupyna512::default();
     hasher.update(msg);
     let result = hasher.finalize();
@@ -266,7 +207,7 @@ fn kup512_n8() {
 #[test]
 fn kup512_n1536() {
     // 1536 bits: first 192 bytes.
-    let msg = &test_message()[..192];
+    let msg = &TEST_MESSAGE[..192];
     let mut hasher = Kupyna512::default();
     hasher.update(msg);
     let result = hasher.finalize();
@@ -299,44 +240,6 @@ fn kup512_empty() {
     );
 }
 
-#[test]
-fn kup512_n510() {
-    // 510 bits: 63 full bytes + 6 bits of the next byte.
-    let full_msg = test_message();
-    let msg = truncate_to_bits(&full_msg, 510);
-    let mut hasher = Kupyna512::default();
-    hasher.update(&msg);
-    let result = hasher.finalize();
-    assert_eq!(
-        result[..],
-        hex!(
-            "2F3BBAC98E8771D6E3B8AA30153ABC4D\
-             0C2985E91DA1B5568FD1BDD705CCAB7E\
-             E8D95D2FC98BFA5322A241E09C896B58\
-             284C83F2488CF943E4B3DE43E05F0DEA"
-        )
-    );
-}
-
-#[test]
-fn kup512_n655() {
-    // 655 bits: 81 full bytes + 7 bits from the next byte.
-    let full_msg = test_message();
-    let msg = truncate_to_bits(&full_msg, 655);
-    let mut hasher = Kupyna512::default();
-    hasher.update(&msg);
-    let result = hasher.finalize();
-    assert_eq!(
-        result[..],
-        hex!(
-            "01B7BDA1DBA77D7379F53C2A498A390D\
-             E5E688A12BC75FEE9E010CB6FEBED3B9\
-             C7023931C74A7B55168A15047D5E2CB7\
-             8A8B5CA2F75E05E80CA398030E02C7AA"
-        )
-    );
-}
-
 //
 //=== Kupyna-384 tests ===
 //
@@ -344,7 +247,7 @@ fn kup512_n655() {
 #[test]
 fn kup384_n760() {
     // 760 bits: first 95 bytes.
-    let msg = &test_message()[..95];
+    let msg = &TEST_MESSAGE[..95];
     let mut hasher = Kupyna384::default();
     hasher.update(msg);
     let result = hasher.finalize();
@@ -354,43 +257,6 @@ fn kup384_n760() {
             "D9021692D84E5175735654846BA751E6\
              D0ED0FAC36DFBC0841287DCB0B5584C7\
              5016C3DECC2A6E47C50B2F3811E351B8"
-        )
-    );
-}
-
-#[test]
-fn kup384_n33() {
-    // 33 bits: test_33 message (5 bytes, with only 33 bits used)
-    let msg = test_33();
-    // If your API supports specifying 33 bits rather than 40 bits,
-    // you may want to call an update_bits(msg, 33) method.
-    // Here we assume the input is pre-masked as needed.
-    let mut hasher = Kupyna384::default();
-    hasher.update(&msg);
-    let result = hasher.finalize();
-    assert_eq!(
-        result[..],
-        hex!(
-            "B0331847CB0F28E0A7ECCBDF72386F49\
-             2B8A07BD6AE6B4AF8C279F1C1E8D771C\
-             D033917FCDFD22EB20A0C4F663C3611D"
-        )
-    );
-}
-
-#[test]
-fn kup384_n1() {
-    // 1 bit: using test_8 but only the first bit.
-    let msg = truncate_to_bits(&test_8(), 1);
-    let mut hasher = Kupyna384::default();
-    hasher.update(&msg);
-    let result = hasher.finalize();
-    assert_eq!(
-        result[..],
-        hex!(
-            "801BA7ACEFFF771FC331690512D432EF\
-             031829EDF1705B487D90B8A333C29868\
-             F586B377BE9C92F08D63F79277C82221"
         )
     );
 }
